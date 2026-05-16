@@ -14,16 +14,17 @@ materials, dimensions, origin, SEO tags) — instantly.
 ```
 Photo  ┐
        ├─► MoulSot Space (Darija STT) ─► Groq Llama-4-Scout ─► validated Product ─► premium UI
-Voice  ┘            ↓ mock                ↓ llama-3.3-70b fallback
-                                          ↓ seeded card (last resort)
+Voice  ┘                                  ↓ llama-3.3-70b fallback
+                                          (failures surface as clear errors)
 ```
 
 - **Speech-to-Text:** MoulSot via Gradio Space `atlasia/MoulSot.v0.3`
-  (`gradio_client`; bundled ffmpeg normalises audio; mock fallback)
+  (`gradio_client`; bundled ffmpeg normalises audio)
 - **LLM:** Groq `meta-llama/llama-4-scout-17b-16e-instruct` (primary),
   `llama-3.3-70b-versatile` (fallback), strict JSON + retry
 - **MCP server:** same capabilities exposed to any MCP agent
-- **Demo-safe mode:** seeded data, zero network — the demo never fails
+- **No silent fallbacks:** any STT/LLM failure raises a clear error
+  instead of fabricating a listing
 
 ## 🗂 Structure
 
@@ -33,8 +34,8 @@ apps/
   frontend/   Next.js 14 + TS + Tailwind (dark Vercel/Stripe UI)
 packages/
   shared-types/  TS + JSON schema (single contract source)
-docs/         ARCHITECTURE.md · MCP.md · DEMO.md
-scripts/      test_env.py · seed_demo.py
+docs/         ARCHITECTURE.md · MCP.md
+scripts/      test_env.py
 ```
 
 ---
@@ -52,11 +53,10 @@ token (both free tiers work).
 cp .env.example .env      # then fill GROQ_API_KEY + HF_TOKEN
 ```
 
-| Variable       | Required | Notes                                       |
-| -------------- | -------- | ------------------------------------------- |
-| `GROQ_API_KEY` | yes\*    | LLM extraction (\*not needed if DEMO_MODE)  |
-| `HF_TOKEN`     | yes\*    | MoulSot Space auth; mock used if absent     |
-| `DEMO_MODE`    | no       | `true` = no network, seeded data            |
+| Variable       | Required | Notes                          |
+| -------------- | -------- | ------------------------------ |
+| `GROQ_API_KEY` | yes      | LLM extraction (Groq)          |
+| `HF_TOKEN`     | yes      | MoulSot Space (Darija STT) auth |
 
 ffmpeg is **not** required system-wide — a binary is bundled via
 `imageio-ffmpeg`.
@@ -134,23 +134,18 @@ cd apps/backend
 pytest -q
 ```
 
-Covers file validation, JSON sanitization, schema enforcement, and the
-demo-mode pipeline.
+Covers file validation, JSON sanitization, and schema enforcement.
 
 ## 🛟 Troubleshooting
 
 | Problem                       | Fix                                                  |
 | ----------------------------- | ---------------------------------------------------- |
 | Backend unreachable from UI   | Backend must run on `:8000`; check CORS origin       |
-| `GROQ_API_KEY` missing        | Set it, or `DEMO_MODE=true` for an offline demo      |
+| `GROQ_API_KEY` missing        | Set it in `.env` — extraction won't run without it   |
 | Mic not working               | Use Chrome, allow mic permission                     |
-| MoulSot down / no key         | Auto-falls back to mock transcription                |
-| Garbled LLM JSON              | Auto sanitize + retry → Gemini → seeded card         |
+| MoulSot down / no token       | Clear error shown — set `HF_TOKEN`, retry            |
+| Garbled LLM JSON              | Auto sanitize + retry → fallback model               |
 | `pip install` fails on Win    | Upgrade pip; ensure Python 3.10+                     |
-
-## 🧭 Demo
-
-Step-by-step stage script + panic switch: [docs/DEMO.md](docs/DEMO.md).
 
 ## 🔭 Future improvements
 
