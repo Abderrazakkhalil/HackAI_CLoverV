@@ -73,10 +73,16 @@ export interface TranscriptionResult {
   source: "moulsot" | "mock";
 }
 
+export interface Artisan {
+  full_name: string;
+  city_region: string;
+  phone: string;
+}
+
 export interface ProcessResponse {
   product: Product;
   meta: Meta;
   transcription: TranscriptionResult;
+  artisan: Artisan | null;
   image_data_url: string | null;
-  demo_mode: boolean;
 }
