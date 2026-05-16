@@ -1,16 +1,23 @@
-# Environment
+# Environments
 .env
-
-# Python
+venv/
+.venv/
+env/
 __pycache__/
-*.py[cod]
-*.pyo
+*.pyc
+.pytest_cache/
 
-# Data
+# Node / Next.js
+node_modules/
+.next/
+out/
+.env.local
+
+# Datasets & Weights
 data/
+*.pt
+*.h5
+*.safetensors
 
-# VS Code
-.vscode/
-
-# Jupyter
-*.ipynb_checkpoints
+# OS Files
+.DS_Store
