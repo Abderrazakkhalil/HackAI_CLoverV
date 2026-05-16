@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product",
+  "description": "Validated multilingual artisan listing from the Hirafi pipeline.",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "category",
+    "tags",
+    "price",
+    "origin"
+  ],
+  "properties": {
+    "title": { "$ref": "#/$defs/localized" },
+    "description": { "$ref": "#/$defs/localized" },
+    "category": { "type": "string" },
+    "subcategory": { "type": ["string", "null"] },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "price": {
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "price_usd_estimate": { "type": "number" },
+        "negotiable": { "type": "boolean" }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length_cm": { "type": ["number", "null"] },
+        "width_cm": { "type": ["number", "null"] },
+        "height_cm": { "type": ["number", "null"] },
+        "weight_kg": { "type": ["number", "null"] }
+      }
+    },
+    "materials": { "type": "array", "items": { "type": "string" } },
+    "colors": { "type": "array", "items": { "type": "string" } },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "country": { "type": "string" },
+        "region": { "type": ["string", "null"] },
+        "technique": { "type": ["string", "null"] }
+      }
+    },
+    "condition": { "type": "string" },
+    "quantity_available": { "type": ["integer", "null"] },
+    "lead_time_days": { "type": ["integer", "null"] },
+    "shipping": {
+      "type": "object",
+      "properties": {
+        "local_available": { "type": "boolean" },
+        "international_available": { "type": "boolean" },
+        "fragile": { "type": "boolean" }
+      }
+    },
+    "artisan_notes": { "type": ["string", "null"] },
+    "raw_transcript": { "type": "string" },
+    "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "missing_fields": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "localized": {
+      "type": "object",
+      "required": ["en", "fr", "ar"],
+      "properties": {
+        "en": { "type": "string" },
+        "fr": { "type": "string" },
+        "ar": { "type": "string" }
+      }
+    }
+  }
+}
