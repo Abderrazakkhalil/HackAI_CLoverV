@@ -2,7 +2,7 @@
 
 Hard guarantees:
 - Output is a schema-valid :class:`Product`, or an :class:`LLMError` is
-  raised (no silent seeded substitution outside explicit DEMO_MODE).
+  raised (no silent seeded substitution).
 - Bad JSON -> sanitize + strict retry -> fallback model.
 - Raw model text is never returned to callers.
 """
@@ -14,7 +14,6 @@ import json
 from pydantic import ValidationError as PydanticValidationError
 
 from ..config import get_settings
-from ..demo_data import DEFAULT_DEMO_KEY, DEMO_PRODUCTS
 from ..errors import LLMError
 from ..logging_conf import get_logger
 from ..prompts import STRICT_RETRY_SUFFIX, SYSTEM_PROMPT, build_user_prompt
@@ -79,17 +78,11 @@ def _extract_with_model(model: str, transcript: str) -> Product:
 def generate_product(transcription: str) -> tuple[Product, str]:
     """Return ``(Product, llm_model_label)``.
 
-    Order: demo mode (explicit opt-in) -> Groq primary -> Groq fallback
-    model. No seeded last-resort: if extraction genuinely fails, that
-    error is raised so it is visible, not hidden behind a fake listing.
+    Order: Groq primary -> Groq fallback model. No seeded last-resort:
+    if extraction genuinely fails, that error is raised so it is
+    visible, not hidden behind a fake listing.
     """
     settings = get_settings()
-
-    if settings.demo_mode:
-        log.info("DEMO_MODE: returning seeded product (explicit opt-in)")
-        p = DEMO_PRODUCTS[DEFAULT_DEMO_KEY].model_copy(deep=True)
-        p.raw_transcript = transcription
-        return p, "demo-seeded"
 
     if not settings.groq_api_key:
         raise LLMError(

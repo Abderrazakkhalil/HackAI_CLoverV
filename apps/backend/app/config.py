@@ -10,7 +10,6 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Repo root = three levels up from this file (app/ -> backend/ -> apps/ -> root)
@@ -31,11 +30,6 @@ class Settings(BaseSettings):
     backend_port: int = 8000
     frontend_origin: str = "http://localhost:3000"
     log_level: str = "INFO"
-
-    # --- Demo safety ---
-    # When true the whole pipeline returns seeded data without any network
-    # calls. This is the single most important demo-reliability switch.
-    demo_mode: bool = Field(default=False)
 
     # --- Speech-to-Text: MoulSot Gradio Space ---
     hf_token: str = ""

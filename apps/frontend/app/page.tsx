@@ -1,24 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AppShell } from "@/components/layout/AppShell";
 import { InputScreen } from "@/components/screens/InputScreen";
 import { GenerationScreen } from "@/components/screens/GenerationScreen";
 import { ProductScreen } from "@/components/screens/ProductScreen";
+import { ProfileScreen } from "@/components/screens/ProfileScreen";
+import { ArtisanOnboarding } from "@/components/artisan/ArtisanOnboarding";
 import { useRecorder } from "@/hooks/useRecorder";
 import { processArtisanProduct } from "@/lib/api";
 import { screenVariants } from "@/lib/motion";
+import {
+  loadArtisan,
+  saveArtisan,
+  type ArtisanProfile,
+} from "@/lib/artisan";
 import type { ProcessResponse } from "@/lib/types";
 
-type Phase = "input" | "loading" | "result";
+type Phase = "onboarding" | "input" | "loading" | "result" | "profile";
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("input");
+  const [artisan, setArtisan] = useState<ArtisanProfile | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [result, setResult] = useState<ProcessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const recorder = useRecorder();
+
+  // Sign-up gate: no profile yet → onboarding first.
+  useEffect(() => {
+    const saved = loadArtisan();
+    if (saved) setArtisan(saved);
+    else setPhase("onboarding");
+  }, []);
+
+  function completeOnboarding(p: ArtisanProfile) {
+    saveArtisan(p);
+    setArtisan(p);
+    setPhase("input");
+  }
 
   async function handleGenerate() {
     if (!recorder.blob) return;
@@ -26,8 +47,7 @@ export default function Home() {
     setPhase("loading");
     const startedAt = Date.now();
     try {
-      const data = await processArtisanProduct(recorder.blob, image);
-      // Let the cinematic loader breathe for at least a moment.
+      const data = await processArtisanProduct(recorder.blob, image, artisan);
       const elapsed = Date.now() - startedAt;
       if (elapsed < 2600) {
         await new Promise((r) => setTimeout(r, 2600 - elapsed));
@@ -48,10 +68,25 @@ export default function Home() {
     setPhase("input");
   }
 
+  const gated = phase === "onboarding";
+
   return (
     <AppShell
-      onBack={phase === "result" ? restart : undefined}
-      headerVariant={phase === "result" ? "result" : "default"}
+      onBack={
+        phase === "result"
+          ? restart
+          : phase === "profile"
+            ? () => setPhase("input")
+            : undefined
+      }
+      onEditProfile={
+        phase === "input" ? () => setPhase("profile") : undefined
+      }
+      activeTab={phase === "profile" ? "profile" : "home"}
+      onHome={gated ? undefined : () => setPhase("input")}
+      onProfile={
+        gated || !artisan ? undefined : () => setPhase("profile")
+      }
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -62,6 +97,9 @@ export default function Home() {
           exit="exit"
           className="flex flex-1 flex-col"
         >
+          {phase === "onboarding" && (
+            <ArtisanOnboarding initial={artisan} onDone={completeOnboarding} />
+          )}
           {phase === "input" && (
             <InputScreen
               image={image}
@@ -74,6 +112,13 @@ export default function Home() {
           {phase === "loading" && <GenerationScreen />}
           {phase === "result" && result && (
             <ProductScreen data={result} onRestart={restart} />
+          )}
+          {phase === "profile" && artisan && (
+            <ProfileScreen
+              artisan={artisan}
+              onEdit={() => setPhase("onboarding")}
+              onBack={() => setPhase("input")}
+            />
           )}
         </motion.div>
       </AnimatePresence>

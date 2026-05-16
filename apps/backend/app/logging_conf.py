@@ -1,7 +1,7 @@
 """Structured logging setup.
 
-Single line per event, prefixed with level + logger name so demo logs
-stay readable in a terminal under pressure.
+Single line per event, prefixed with level + logger name so logs stay
+readable in a terminal.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ def configure_logging(level: str = "INFO") -> None:
     root.addHandler(handler)
     root.setLevel(level.upper())
 
-    # Quiet noisy third-party loggers during a live demo.
+    # Quiet noisy third-party loggers.
     for noisy in ("httpx", "httpcore", "urllib3", "google"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 

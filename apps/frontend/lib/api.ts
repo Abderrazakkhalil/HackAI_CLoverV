@@ -1,3 +1,4 @@
+import type { ArtisanProfile } from "./artisan";
 import type { ProcessResponse } from "./types";
 
 const API_URL =
@@ -6,10 +7,12 @@ const API_URL =
 export async function processArtisanProduct(
   audio: Blob,
   image: File | null,
+  artisan: ArtisanProfile | null,
 ): Promise<ProcessResponse> {
   const form = new FormData();
   form.append("audio", audio, "recording.webm");
   if (image) form.append("image", image);
+  if (artisan) form.append("artisan", JSON.stringify(artisan));
 
   let resp: Response;
   try {
@@ -28,13 +31,5 @@ export async function processArtisanProduct(
     const msg = body?.error || `Request failed (${resp.status})`;
     throw new Error(body?.detail ? `${msg} — ${body.detail}` : msg);
   }
-  return resp.json();
-}
-
-export async function getHealth(): Promise<{
-  status: string;
-  demo_mode: boolean;
-}> {
-  const resp = await fetch(`${API_URL}/api/health`);
   return resp.json();
 }

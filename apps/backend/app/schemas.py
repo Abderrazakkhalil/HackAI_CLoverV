@@ -71,6 +71,14 @@ class Product(BaseModel):
     missing_fields: list[str] = Field(default_factory=list)
 
 
+class Artisan(BaseModel):
+    """Artisan profile captured at sign-up, attached to every post."""
+
+    full_name: str = ""
+    city_region: str = ""
+    phone: str = ""
+
+
 class Meta(BaseModel):
     pipeline_version: str
     asr_model: str
@@ -91,8 +99,8 @@ class ProcessResponse(BaseModel):
     product: Product
     meta: Meta
     transcription: TranscriptionResult
+    artisan: Artisan | None = None
     image_data_url: str | None = None
-    demo_mode: bool = False
 
 
 class ErrorResponse(BaseModel):

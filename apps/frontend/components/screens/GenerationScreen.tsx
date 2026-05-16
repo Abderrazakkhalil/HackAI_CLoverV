@@ -4,13 +4,9 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
-const STEPS = [
-  "Transcribing your voice",
-  "Understanding your product",
-  "Crafting the perfect description",
-  "Almost done…",
-];
+const STEP_KEYS = ["gen.step1", "gen.step2", "gen.step3", "gen.step4"];
 
 function Particles() {
   const dots = Array.from({ length: 14 });
@@ -40,6 +36,8 @@ function Particles() {
 }
 
 export function GenerationScreen() {
+  const { t } = useI18n();
+  const steps = STEP_KEYS.map((k) => t(k));
   const [progress, setProgress] = useState(6);
   const [step, setStep] = useState(0);
 
@@ -49,7 +47,7 @@ export function GenerationScreen() {
       280,
     );
     const s = setInterval(
-      () => setStep((v) => Math.min(v + 1, STEPS.length - 1)),
+      () => setStep((v) => Math.min(v + 1, steps.length - 1)),
       1300,
     );
     return () => {
@@ -72,12 +70,10 @@ export function GenerationScreen() {
         className="text-center"
       >
         <h2 className="text-2xl font-bold tracking-tight text-gold-50">
-          Generating your
-          <br />
-          product listing…
+          {t("gen.title")}
         </h2>
         <p className="mt-2 text-sm text-charcoal-600">
-          Sit back while our AI works its magic ✨
+          {t("gen.subtitle")}
         </p>
       </motion.div>
 
@@ -133,7 +129,7 @@ export function GenerationScreen() {
       {/* Checklist */}
       <div className="w-full rounded-2xl border border-white/[0.05] bg-charcoal-850/50 p-5">
         <div className="flex flex-col gap-3.5">
-          {STEPS.map((label, i) => {
+          {steps.map((label, i) => {
             const done = i < step;
             const active = i === step;
             return (

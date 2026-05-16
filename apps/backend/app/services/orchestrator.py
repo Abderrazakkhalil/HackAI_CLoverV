@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from ..config import get_settings
 from ..errors import ValidationError
 from ..logging_conf import get_logger
-from ..schemas import Meta, ProcessResponse
+from ..schemas import Artisan, Meta, ProcessResponse
 from .llm import generate_product
 from .transcription import transcribe
 
@@ -47,6 +47,7 @@ async def run_pipeline(
     image_bytes: bytes | None = None,
     image_filename: str | None = None,
     image_content_type: str | None = None,
+    artisan: Artisan | None = None,
 ) -> ProcessResponse:
     settings = get_settings()
 
@@ -81,6 +82,6 @@ async def run_pipeline(
         product=product,
         meta=meta,
         transcription=transcription,
+        artisan=artisan,
         image_data_url=image_data_url,
-        demo_mode=settings.demo_mode,
     )

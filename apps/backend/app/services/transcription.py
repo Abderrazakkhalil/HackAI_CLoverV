@@ -5,8 +5,7 @@ install needed) and sent to ``atlasia/MoulSot.v0.3`` through
 ``gradio_client``.
 
 No silent fallbacks: any real failure raises a clear error so it is
-visible instead of masked by a fabricated listing. (``DEMO_MODE`` is the
-*only* path that returns seeded text, and that is an explicit opt-in.)
+visible instead of masked by a fabricated listing.
 """
 
 from __future__ import annotations
@@ -17,7 +16,6 @@ import time
 from pathlib import Path
 
 from ..config import get_settings
-from ..demo_data import DEMO_TRANSCRIPT
 from ..errors import EmptyTranscriptionError, TranscriptionError, ValidationError
 from ..logging_conf import get_logger
 from ..schemas import TranscriptionResult
@@ -93,10 +91,6 @@ def transcribe(
     """
     settings = get_settings()
     validate_audio(filename, content_type, len(audio_bytes))
-
-    if settings.demo_mode:
-        log.info("DEMO_MODE: returning seeded transcription (explicit opt-in)")
-        return TranscriptionResult(text=DEMO_TRANSCRIPT, source="mock"), 0
 
     if not settings.hf_token:
         raise TranscriptionError(

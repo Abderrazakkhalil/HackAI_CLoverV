@@ -9,9 +9,8 @@ MCP-aware agent (Claude Desktop, an IDE, an orchestrator) can drive the
 artisan workflow with typed inputs and structured outputs — the exact
 same code the web app uses, no REST glue required.
 
-- Tools     = the actions (transcribe / generate / full pipeline).
-- Resources = read-only seeded artisan listings (great demo material).
-- Prompts   = the reusable extraction prompt.
+- Tools   = the actions (transcribe / generate / full pipeline).
+- Prompts = the reusable extraction prompt.
 
 Run: ``python mcp_server.py``  (stdio transport)
 """
@@ -20,14 +19,12 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import json
 
 from mcp.server.fastmcp import FastMCP
 
-from app.demo_data import DEMO_PRODUCTS
 from app.logging_conf import configure_logging, get_logger
 from app.prompts import SYSTEM_PROMPT, build_user_prompt
-from app.schemas import Product
+from app.schemas import Artisan
 from app.services.llm import generate_product
 from app.services.orchestrator import run_pipeline
 from app.services.transcription import transcribe
@@ -72,10 +69,20 @@ async def process_artisan_product(
     filename: str = "audio.webm",
     image_base64: str | None = None,
     image_filename: str | None = None,
+    artisan_full_name: str | None = None,
+    artisan_city_region: str | None = None,
+    artisan_phone: str | None = None,
 ) -> dict:
-    """Full pipeline: audio (+ optional image) -> rich product JSON + meta."""
+    """Full pipeline: audio (+ optional image, + artisan) -> JSON + meta."""
     audio_bytes = base64.b64decode(audio_base64)
     image_bytes = base64.b64decode(image_base64) if image_base64 else None
+    artisan = None
+    if artisan_full_name or artisan_city_region or artisan_phone:
+        artisan = Artisan(
+            full_name=artisan_full_name or "",
+            city_region=artisan_city_region or "",
+            phone=artisan_phone or "",
+        )
     response = await run_pipeline(
         audio_bytes=audio_bytes,
         audio_filename=filename,
@@ -83,27 +90,9 @@ async def process_artisan_product(
         image_bytes=image_bytes,
         image_filename=image_filename,
         image_content_type="image/jpeg",
+        artisan=artisan,
     )
     return response.model_dump()
-
-
-# --------------------------------------------------------------------------- #
-# Resources — seeded artisan listings
-# --------------------------------------------------------------------------- #
-@mcp.resource("product-card://{product_id}")
-def product_card(product_id: str) -> str:
-    """Read a seeded, frontend-ready product card by id."""
-    card: Product | None = DEMO_PRODUCTS.get(product_id)
-    if card is None:
-        available = ", ".join(DEMO_PRODUCTS)
-        return json.dumps({"error": f"Unknown id. Available: {available}"})
-    return card.model_dump_json(indent=2)
-
-
-@mcp.resource("product-card://catalog")
-def catalog() -> str:
-    """List all seeded product ids."""
-    return json.dumps({"products": list(DEMO_PRODUCTS)}, indent=2)
 
 
 # --------------------------------------------------------------------------- #

@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { UploadCloud, X } from "lucide-react";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 
 export function ImageUpload({
   file,
@@ -11,6 +12,7 @@ export function ImageUpload({
   file: File | null;
   onSelect: (file: File | null) => void;
 }) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -87,9 +89,11 @@ export function ImageUpload({
         <UploadCloud size={24} />
       </div>
       <div className="text-center">
-        <p className="font-semibold text-gold-50">Upload Photo</p>
-        <p className="text-sm text-charcoal-600">or tap to capture</p>
-        <p className="mt-1 text-xs text-charcoal-600">JPG, PNG up to 10MB</p>
+        <p className="font-semibold text-gold-50">{t("upload.title")}</p>
+        <p className="text-sm text-charcoal-600">{t("upload.hint")}</p>
+        <p className="mt-1 text-xs text-charcoal-600">
+          {t("upload.formats")}
+        </p>
       </div>
     </motion.div>
   );

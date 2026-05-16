@@ -6,6 +6,7 @@ import { ImageUpload } from "@/components/upload/ImageUpload";
 import { MicButton } from "@/components/recording/MicButton";
 import { Waveform } from "@/components/recording/Waveform";
 import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/components/i18n/LanguageProvider";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { useRecorder } from "@/hooks/useRecorder";
 
@@ -28,6 +29,7 @@ export function InputScreen({
   onGenerate: () => void;
   error: string | null;
 }) {
+  const { t } = useI18n();
   const { status, seconds, levels, error: micError, start, stop, reset } =
     recorder;
   const recording = status === "recording";
@@ -42,12 +44,10 @@ export function InputScreen({
     >
       <motion.div variants={fadeUp} className="mb-6 mt-2 text-center">
         <h1 className="text-[28px] font-bold leading-tight tracking-tight text-gold-50">
-          Create your product
-          <br />
-          listing in seconds
+          {t("input.title")}
         </h1>
         <p className="mx-auto mt-2 max-w-[18rem] text-sm text-charcoal-600">
-          Upload a photo and describe your product in Darija.
+          {t("input.subtitle")}
         </p>
       </motion.div>
 
@@ -75,17 +75,17 @@ export function InputScreen({
         <div className="text-center">
           <p className="font-semibold text-gold-50">
             {recording
-              ? "Recording…"
+              ? t("rec.recording")
               : status === "recorded"
-                ? "Voice note ready"
-                : "Push to talk"}
+                ? t("rec.ready")
+                : t("rec.pushToTalk")}
           </p>
           <p className="mt-0.5 font-mono text-sm text-charcoal-600">
             {recording
               ? fmt(seconds)
               : status === "recorded"
-                ? "Tap to re-record"
-                : "Describe your product in Darija"}
+                ? t("rec.reRecord")
+                : t("rec.describe")}
           </p>
         </div>
       </motion.div>
@@ -96,7 +96,7 @@ export function InputScreen({
           animate={{ opacity: 1 }}
           className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300"
         >
-          {error || micError}
+          {error || (micError ? t("rec.micDenied") : null)}
         </motion.div>
       )}
 
@@ -107,10 +107,10 @@ export function InputScreen({
           className="w-full py-4 text-base"
         >
           <Sparkles size={18} />
-          Generate Listing
+          {t("btn.generate")}
         </Button>
         <p className="mt-2 text-center text-xs text-charcoal-600">
-          {canGenerate ? "Ready when you are" : "Voice note is required"}
+          {canGenerate ? t("btn.readyWhen") : t("btn.voiceRequired")}
         </p>
       </motion.div>
     </motion.div>
