@@ -1,8 +1,11 @@
-"""Darija Speech-to-Text via the MoulSot Gradio Space.
+"""Speech-to-Text via Gradio Spaces.
+
+Two backends are supported:
+- ``darija``  -> atlasia/MoulSot.v0.3  (Darija / Arabic)
+- ``amazigh`` -> Tamazight-NLP/ASR     (Tamazight / Berber)
 
 Audio is normalised to 16 kHz mono WAV (bundled ffmpeg, no system
-install needed) and sent to ``atlasia/MoulSot.v0.3`` through
-``gradio_client``.
+install needed) and sent through ``gradio_client``.
 
 No silent fallbacks: any real failure raises a clear error so it is
 visible instead of masked by a fabricated listing.
@@ -10,15 +13,17 @@ visible instead of masked by a fabricated listing.
 
 from __future__ import annotations
 
+import signal
 import subprocess
 import tempfile
 import time
 from pathlib import Path
+from contextlib import contextmanager
 
 from ..config import get_settings
 from ..errors import EmptyTranscriptionError, TranscriptionError, ValidationError
 from ..logging_conf import get_logger
-from ..schemas import TranscriptionResult
+from ..schemas import SpeechLang, TranscriptionResult
 
 log = get_logger("hackai.stt")
 
@@ -64,25 +69,65 @@ def _to_wav_16k_mono(src: Path) -> Path:
     return dst
 
 
-def _call_space(wav_path: Path) -> str:
+def _call_space(wav_path: Path, speech_lang: SpeechLang) -> str:
     from gradio_client import Client, handle_file
 
     settings = get_settings()
     # verbose=False: gradio_client otherwise prints a "✔" that crashes
     # the Windows cp1252 console with UnicodeEncodeError.
-    client = Client(
-        settings.asr_space, hf_token=settings.hf_token, verbose=False
-    )
-    result = client.predict(
-        handle_file(str(wav_path)),
-        settings.asr_lang,
-        api_name="/transcribe",
-    )
-    return str(result).strip() if result else ""
+    timeout_s = settings.amazigh_asr_timeout_s if speech_lang == "amazigh" else settings.asr_timeout_s
+
+    try:
+        if speech_lang == "amazigh":
+            log.info("Initializing Tamazight-NLP/ASR client (timeout=%ds)...", timeout_s)
+            client = Client(
+                settings.amazigh_asr_space,
+                hf_token=settings.hf_token,
+                verbose=False,
+            )
+            log.info("Calling Tamazight-NLP/ASR with api_name=%s", settings.amazigh_asr_api_name)
+            result = client.predict(
+                handle_file(str(wav_path)),
+                api_name=settings.amazigh_asr_api_name,
+            )
+        else:
+            log.info("Initializing MoulSot client (timeout=%ds)...", timeout_s)
+            client = Client(
+                settings.asr_space, hf_token=settings.hf_token, verbose=False
+            )
+            log.info("Calling MoulSot with api_name=/transcribe, lang=%s", settings.asr_lang)
+            result = client.predict(
+                handle_file(str(wav_path)),
+                settings.asr_lang,
+                api_name="/transcribe",
+            )
+        log.info("Space returned: %s (type=%s, len=%s)", result, type(result).__name__, len(str(result)) if result else 0)
+        return str(result).strip() if result else ""
+    except TimeoutError as e:
+        msg = f"ASR Space request timed out after {timeout_s}s. The Space may be slow or unavailable."
+        log.error(msg)
+        raise TranscriptionError("ASR service timed out.", detail=msg) from e
+    except Exception as e:
+        log.error("Space call failed: %s %s", type(e).__name__, str(e)[:500])
+        raise
+
+
+_SOURCE_BY_LANG: dict[SpeechLang, str] = {
+    "darija": "moulsot",
+    "amazigh": "tamazight-nlp",
+}
+
+_PROVIDER_BY_LANG: dict[SpeechLang, str] = {
+    "darija": "MoulSot",
+    "amazigh": "Tamazight-NLP",
+}
 
 
 def transcribe(
-    audio_bytes: bytes, filename: str, content_type: str | None
+    audio_bytes: bytes,
+    filename: str,
+    content_type: str | None,
+    speech_lang: SpeechLang = "darija",
 ) -> tuple[TranscriptionResult, int]:
     """Return ``(TranscriptionResult, inference_ms)``.
 
@@ -95,7 +140,7 @@ def transcribe(
     if not settings.hf_token:
         raise TranscriptionError(
             "Speech-to-text is not configured.",
-            detail="HF_TOKEN is missing — set it in .env to call MoulSot.",
+            detail="HF_TOKEN is missing — set it in .env to call the ASR Space.",
         )
 
     suffix = Path(filename).suffix or ".webm"
@@ -116,12 +161,13 @@ def transcribe(
 
         try:
             start = time.time()
-            text = _call_space(wav_path)
+            text = _call_space(wav_path, speech_lang)
             inference_ms = int((time.time() - start) * 1000)
         except Exception as exc:
-            log.error("MoulSot Space call failed: %s", exc)
+            provider = _PROVIDER_BY_LANG[speech_lang]
+            log.error("%s Space call failed: %s", provider, exc)
             raise TranscriptionError(
-                "The transcription service (MoulSot) is unavailable.",
+                f"The transcription service ({provider}) is unavailable.",
                 detail=f"{type(exc).__name__}: {exc}",
             ) from exc
     finally:
@@ -133,5 +179,11 @@ def transcribe(
     if not text:
         raise EmptyTranscriptionError()
 
-    log.info("Transcription ok (%d chars, %d ms)", len(text), inference_ms)
-    return TranscriptionResult(text=text, source="moulsot"), inference_ms
+    log.info(
+        "Transcription ok lang=%s (%d chars, %d ms)",
+        speech_lang, len(text), inference_ms,
+    )
+    return (
+        TranscriptionResult(text=text, source=_SOURCE_BY_LANG[speech_lang]),
+        inference_ms,
+    )

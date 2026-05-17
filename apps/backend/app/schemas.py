@@ -7,13 +7,17 @@ never trusted (validated + retried in services/llm.py).
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+SpeechLang = Literal["darija", "amazigh"]
 
 
 class TranscriptionResult(BaseModel):
-    text: str = Field(..., description="Raw Darija transcription")
+    text: str = Field(..., description="Raw transcription (Darija or Amazigh)")
     language: str = "ar-MA"
-    source: str = Field("moulsot", description="moulsot | mock")
+    source: str = Field("moulsot", description="moulsot | tamazight-nlp")
 
 
 class LocalizedText(BaseModel):

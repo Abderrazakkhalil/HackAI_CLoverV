@@ -16,6 +16,12 @@ import {
   saveArtisan,
   type ArtisanProfile,
 } from "@/lib/artisan";
+import {
+  DEFAULT_SPEECH_LANG,
+  loadSpeechLang,
+  saveSpeechLang,
+  type SpeechLang,
+} from "@/lib/speechLang";
 import type { ProcessResponse } from "@/lib/types";
 
 type Phase = "onboarding" | "input" | "loading" | "result" | "profile";
@@ -24,6 +30,8 @@ export default function Home() {
   const [phase, setPhase] = useState<Phase>("input");
   const [artisan, setArtisan] = useState<ArtisanProfile | null>(null);
   const [image, setImage] = useState<File | null>(null);
+  const [speechLang, setSpeechLangState] =
+    useState<SpeechLang>(DEFAULT_SPEECH_LANG);
   const [result, setResult] = useState<ProcessResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const recorder = useRecorder();
@@ -33,7 +41,13 @@ export default function Home() {
     const saved = loadArtisan();
     if (saved) setArtisan(saved);
     else setPhase("onboarding");
+    setSpeechLangState(loadSpeechLang());
   }, []);
+
+  function setSpeechLang(l: SpeechLang) {
+    setSpeechLangState(l);
+    saveSpeechLang(l);
+  }
 
   function completeOnboarding(p: ArtisanProfile) {
     saveArtisan(p);
@@ -47,7 +61,12 @@ export default function Home() {
     setPhase("loading");
     const startedAt = Date.now();
     try {
-      const data = await processArtisanProduct(recorder.blob, image, artisan);
+      const data = await processArtisanProduct(
+        recorder.blob,
+        image,
+        artisan,
+        speechLang,
+      );
       const elapsed = Date.now() - startedAt;
       if (elapsed < 2600) {
         await new Promise((r) => setTimeout(r, 2600 - elapsed));
@@ -105,6 +124,8 @@ export default function Home() {
               image={image}
               setImage={setImage}
               recorder={recorder}
+              speechLang={speechLang}
+              setSpeechLang={setSpeechLang}
               onGenerate={handleGenerate}
               error={error}
             />

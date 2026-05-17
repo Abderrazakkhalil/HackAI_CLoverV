@@ -31,11 +31,19 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3000"
     log_level: str = "INFO"
 
-    # --- Speech-to-Text: MoulSot Gradio Space ---
+    # --- Speech-to-Text: MoulSot Gradio Space (Darija / Arabic) ---
     hf_token: str = ""
     asr_space: str = "atlasia/MoulSot.v0.3"
     asr_lang: str = "Auto (Darija / Arabic)"
-    asr_timeout_s: float = 90.0
+    asr_timeout_s: float = 120.0
+
+    # --- Speech-to-Text: Tamazight-NLP Gradio Space (Amazigh) ---
+    # Wraps ayymen/stt_zgh_fastconformer_ctc_small via NVIDIA NeMo.
+    # The Space exposes two tabs sharing get_transcripts(audio_path);
+    # the first (microphone) is reachable at api_name="/predict".
+    amazigh_asr_space: str = "Tamazight-NLP/ASR"
+    amazigh_asr_api_name: str = "/predict"
+    amazigh_asr_timeout_s: float = 120.0
 
     # --- LLM: Groq (primary + fallback model) ---
     groq_api_key: str = ""

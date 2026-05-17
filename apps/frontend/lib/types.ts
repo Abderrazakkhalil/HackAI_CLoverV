@@ -67,7 +67,7 @@ export interface Meta {
 export interface TranscriptionResult {
   text: string;
   language: string;
-  source: "moulsot" | "mock";
+  source: "moulsot" | "tamazight-nlp" | "mock";
 }
 
 export interface Artisan {

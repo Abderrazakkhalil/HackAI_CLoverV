@@ -31,25 +31,41 @@ async def health() -> dict:
     }
 
 
+_ALLOWED_SPEECH_LANGS = {"darija", "amazigh"}
+
+
 @router.post("/process", response_model=ProcessResponse)
 async def process(
     audio: UploadFile = File(...),
     image: UploadFile | None = File(default=None),
     artisan: str | None = Form(default=None),
+    speech_lang: str = Form(default="darija"),
 ) -> ProcessResponse:
     """Full pipeline: audio (+ optional image, + artisan) -> listing."""
+    log.info("POST /api/process: audio=%s, image=%s, speech_lang=%s", audio.filename, image.filename if image else None, speech_lang)
+
+    if speech_lang not in _ALLOWED_SPEECH_LANGS:
+        log.error("Invalid speech_lang: %s", speech_lang)
+        raise ValidationError(
+            f"Unsupported speech_lang: {speech_lang!r}. "
+            f"Expected one of {sorted(_ALLOWED_SPEECH_LANGS)}."
+        )
+
     audio_bytes = await audio.read()
     image_bytes = await image.read() if image is not None else None
+    log.info("Files read: audio_bytes=%d, image_bytes=%s", len(audio_bytes), len(image_bytes) if image_bytes else None)
 
     artisan_obj: Artisan | None = None
     if artisan:
         try:
             artisan_obj = Artisan.model_validate(json.loads(artisan))
         except (json.JSONDecodeError, PydanticValidationError) as exc:
+            log.error("Invalid artisan JSON: %s", exc)
             raise ValidationError(
                 "Invalid artisan profile.", detail=str(exc)
             ) from exc
 
+    log.info("Pipeline starting...")
     return await run_pipeline(
         audio_bytes=audio_bytes,
         audio_filename=audio.filename or "audio.webm",
@@ -58,6 +74,7 @@ async def process(
         image_filename=image.filename if image else None,
         image_content_type=image.content_type if image else None,
         artisan=artisan_obj,
+        speech_lang=speech_lang,  # type: ignore[arg-type]
     )
 
 

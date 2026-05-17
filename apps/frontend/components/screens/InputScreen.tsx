@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { ImageUpload } from "@/components/upload/ImageUpload";
 import { MicButton } from "@/components/recording/MicButton";
+import { SpeechLangPicker } from "@/components/recording/SpeechLangPicker";
 import { Waveform } from "@/components/recording/Waveform";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { useRecorder } from "@/hooks/useRecorder";
+import type { SpeechLang } from "@/lib/speechLang";
 
 function fmt(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(
@@ -20,12 +22,16 @@ export function InputScreen({
   image,
   setImage,
   recorder,
+  speechLang,
+  setSpeechLang,
   onGenerate,
   error,
 }: {
   image: File | null;
   setImage: (f: File | null) => void;
   recorder: ReturnType<typeof useRecorder>;
+  speechLang: SpeechLang;
+  setSpeechLang: (l: SpeechLang) => void;
   onGenerate: () => void;
   error: string | null;
 }) {
@@ -59,6 +65,12 @@ export function InputScreen({
         variants={fadeUp}
         className="mt-5 flex flex-1 flex-col items-center justify-center gap-3 rounded-3xl border border-white/[0.05] bg-charcoal-850/40 py-7"
       >
+        <SpeechLangPicker
+          value={speechLang}
+          onChange={setSpeechLang}
+          disabled={recording}
+        />
+
         {recording ? (
           <Waveform levels={levels} />
         ) : (
@@ -85,7 +97,11 @@ export function InputScreen({
               ? fmt(seconds)
               : status === "recorded"
                 ? t("rec.reRecord")
-                : t("rec.describe")}
+                : t(
+                    speechLang === "amazigh"
+                      ? "rec.describe.amazigh"
+                      : "rec.describe",
+                  )}
           </p>
         </div>
       </motion.div>
