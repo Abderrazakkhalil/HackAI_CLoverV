@@ -11,9 +11,18 @@ price in MAD + USD, materials, dimensions, origin, SEO tags) — instantly.
 
 ## 📸 Screenshots
 
-| Home | Processing audio | Generated listing |
-| --- | --- | --- |
-| ![Home page](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/home-page.png) | ![Processing audio](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/processing-audio-page.png) | ![Post page](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/post-page.png) |
+<table>
+  <tr>
+    <th>Home</th>
+    <th>Processing audio</th>
+    <th>Generated listing</th>
+  </tr>
+  <tr>
+    <td><img src="./docs/screenshots/home-page.png" alt="Home page" width="320"></td>
+    <td><img src="./docs/screenshots/processing-audio-page.png" alt="Processing audio" width="320"></td>
+    <td><img src="./docs/screenshots/post-page.png" alt="Post page" width="320"></td>
+  </tr>
+</table>
 
 ## ✨ What it does
 
@@ -170,6 +179,20 @@ Covers file validation, JSON sanitization, and schema enforcement.
 | MoulSot down / no token       | Clear error shown — set `HF_TOKEN`, retry            |
 | Garbled LLM JSON              | Auto sanitize + retry → fallback model               |
 | `pip install` fails on Win    | Upgrade pip; ensure Python 3.10+                     |
+
+## 📣 Social publication (in progress)
+
+We're building **one-click auto-posting to Facebook** so a generated listing
+can go from the studio straight to an artisan's Facebook page. The work
+lives on the [`social_publication`](https://github.com/Abderrazakkhalil/HackAI_CLoverV/tree/social_publication)
+branch — check it out for the Facebook Graph API integration, OAuth flow,
+and post-composition logic. Pull and run that branch to try the feature
+before it lands on `main`.
+
+```bash
+git fetch origin
+git checkout social_publication
+```
 
 ## 🔭 Future improvements
 
