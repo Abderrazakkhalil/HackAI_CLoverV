@@ -9,20 +9,44 @@ materials, dimensions, origin, SEO tags) — instantly.
 
 ---
 
+## 📸 Screenshots
+
+| Home | Processing audio | Generated listing |
+| --- | --- | --- |
+| ![Home page](docs/screenshots/home%20page.png) | ![Processing audio](docs/screenshots/processing%20audio%20page.png) | ![Post page](docs/screenshots/post%20page.png) |
+
 ## ✨ What it does
 
 ```
 Photo  ┐
-       ├─► MoulSot Space (Darija STT) ─► Groq Llama-4-Scout ─► validated Product ─► premium UI
-Voice  ┘                                  ↓ llama-3.3-70b fallback
-                                          (failures surface as clear errors)
+       ├─► Darija OR Amazigh STT ─► Groq Llama-4-Scout ─► validated Product ─► premium UI
+Voice  ┘   (user-selected lang)     ↓ llama-3.3-70b fallback   ↓ AI price recommendation
+                                    (failures surface as clear errors)
 ```
 
-- **Speech-to-Text:** MoulSot via Gradio Space `atlasia/MoulSot.v0.3`
-  (`gradio_client`; bundled ffmpeg normalises audio)
-- **LLM:** Groq `meta-llama/llama-4-scout-17b-16e-instruct` (primary),
-  `llama-3.3-70b-versatile` (fallback), strict JSON + retry
+- **Speech-to-Text (multi-lingual):**
+  - Darija via `atlasia/MoulSot.v0.3`
+  - Amazigh / Tamazight via `Tamazight-NLP/ASR`
+  - User picks the spoken language with a segmented control above the mic
+    (persisted in `localStorage`); choice flows through the API
+    (`speech_lang`) to route audio to the right Gradio Space
+- **LLM extraction:** Groq `meta-llama/llama-4-scout-17b-16e-instruct`
+  (primary), `llama-3.3-70b-versatile` (fallback), strict JSON + retry
+- **AI price recommendation:** when the artisan does **not** speak a price,
+  the backend pulls comparable published listings from Supabase (3-level
+  fallback: category + materials → category → any published), scores them
+  (`2×material_overlap + colors_overlap + 0.5×tag_overlap + dimension_similarity`),
+  and asks Groq to estimate a fair MAD price as a Moroccan handicraft
+  expert. Returns suggested / min / max / confidence / reasoning, shown
+  in the UI with an "AI suggested" badge and a collapsible reasoning panel.
+- **Anti-hallucination guard:** the LLM must set `price_mentioned=true` only
+  when the transcript contains an explicit number **and** a currency word
+  (درهم / dirham / MAD / euro / dollar / دولار). Otherwise the orchestrator
+  triggers the recommendation flow instead of trusting a fabricated price.
+- **i18n UI:** EN / FR / AR
 - **MCP server:** same capabilities exposed to any MCP agent
+- **Observability:** pipeline-stage logs and explicit ASR timeouts so
+  cold-start hangs surface as timeouts instead of silent 100% spinners
 - **No silent fallbacks:** any STT/LLM failure raises a clear error
   instead of fabricating a listing
 
@@ -150,10 +174,10 @@ Covers file validation, JSON sanitization, and schema enforcement.
 ## 🔭 Future improvements
 
 - Vision model to read the photo (not just a filename hint)
-- Supabase storage + listing history
 - One-click export to Etsy/Shopify
 - Streaming generation for sub-second perceived latency
 - Multi-product batch mode, Docker compose
+- More STT languages beyond Darija + Amazigh
 
 ---
 
