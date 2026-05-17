@@ -8,6 +8,10 @@ httpx==0.28.1
 groq==0.15.0
 gradio-client==1.4.3
 imageio-ffmpeg==0.5.1
+apscheduler==3.10.4
 mcp==1.2.0
 pytest==8.3.4
 pytest-asyncio==0.25.2
+pytest-mock==3.14.0
+pytest-cov==6.0.0
+yarl==1.9.4

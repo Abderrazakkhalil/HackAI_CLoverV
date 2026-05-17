@@ -42,6 +42,24 @@ class Settings(BaseSettings):
     groq_primary_model: str = "meta-llama/llama-4-scout-17b-16e-instruct"
     groq_fallback_model: str = "llama-3.3-70b-versatile"
 
+    # --- Social Commerce: Meta Graph API ---
+    meta_app_id: str = ""
+    meta_app_secret: str = ""
+    meta_redirect_uri: str = ""
+    meta_access_token: str = ""
+    facebook_page_id: str = ""
+    meta_graph_version: str = "v21.0"
+    meta_api_timeout_s: float = 30.0
+
+    # --- Social: external-call retry policy ---
+    social_retry_attempts: int = 3
+    social_retry_backoff_s: tuple[float, float, float] = (1.0, 2.0, 4.0)
+
+    # --- Social: scheduler persistence ---
+    social_db_path: str = str(
+        Path(__file__).resolve().parents[1] / "social_schedule.db"
+    )
+
     # --- Limits ---
     max_audio_bytes: int = 15 * 1024 * 1024  # 15 MB
     max_image_bytes: int = 10 * 1024 * 1024  # 10 MB
@@ -49,6 +67,19 @@ class Settings(BaseSettings):
 
     # --- Pipeline identity (surfaced in response meta) ---
     pipeline_version: str = "4.0.0"
+
+    @property
+    def graph_base_url(self) -> str:
+        return f"https://graph.facebook.com/{self.meta_graph_version}"
+
+    @property
+    def meta_redirect_uri_resolved(self) -> str:
+        """OAuth redirect: explicit ``META_REDIRECT_URI`` wins, else derive
+        it from the frontend origin (back-compat default)."""
+        return (
+            self.meta_redirect_uri
+            or f"{self.frontend_origin}/api/social/auth/meta/callback"
+        )
 
     @property
     def allowed_audio_types(self) -> set[str]:

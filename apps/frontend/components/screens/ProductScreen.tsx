@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Download,
+  Facebook,
   Heart,
   MapPin,
   PartyPopper,
@@ -13,6 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { FacebookPublishModal } from "@/components/social/FacebookPublishModal";
 import { useI18n } from "@/components/i18n/LanguageProvider";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { ProcessResponse } from "@/lib/types";
@@ -26,6 +29,19 @@ export function ProductScreen({
 }) {
   const { t, lang, rtl } = useI18n();
   const { product, image_data_url, meta, transcription, artisan } = data;
+
+  const [fbOpen, setFbOpen] = useState(false);
+
+  // Default Facebook caption: the generated marketing description plus
+  // the SEO tags as hashtags. Fully editable in the modal.
+  const fbCaption = [
+    product.description[lang],
+    product.tags.length
+      ? product.tags.map((tg) => `#${tg.replace(/\s+/g, "")}`).join(" ")
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   const dims = product.dimensions;
   const dimText = [
@@ -217,16 +233,34 @@ export function ProductScreen({
         </div>
       </motion.div>
 
-      <motion.div variants={fadeUp} className="mt-5 grid grid-cols-2 gap-3">
-        <Button onClick={onRestart} variant="primary">
+      {/* Primary post-generation CTA: publish straight to Facebook. */}
+      <motion.div variants={fadeUp} className="mt-5">
+        <Button
+          onClick={() => setFbOpen(true)}
+          variant="primary"
+          className="w-full"
+        >
+          <Facebook size={18} />
+          {t("fb.publish")}
+        </Button>
+      </motion.div>
+
+      <motion.div variants={fadeUp} className="mt-3 grid grid-cols-2 gap-3">
+        <Button onClick={onRestart} variant="outline">
           <Download size={17} />
           {t("btn.save")}
         </Button>
-        <Button onClick={onRestart} variant="outline">
+        <Button onClick={onRestart} variant="ghost">
           <Plus size={17} />
           {t("btn.createAnother")}
         </Button>
       </motion.div>
+
+      <FacebookPublishModal
+        open={fbOpen}
+        onClose={() => setFbOpen(false)}
+        defaultCaption={fbCaption}
+      />
     </motion.div>
   );
 }

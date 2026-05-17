@@ -9,7 +9,7 @@ MCP-aware agent (Claude Desktop, an IDE, an orchestrator) can drive the
 artisan workflow with typed inputs and structured outputs — the exact
 same code the web app uses, no REST glue required.
 
-- Tools   = the actions (transcribe / generate / full pipeline).
+- Tools   = the artisan pipeline + the Social Commerce tools.
 - Prompts = the reusable extraction prompt.
 
 Run: ``python mcp_server.py``  (stdio transport)
@@ -28,11 +28,15 @@ from app.schemas import Artisan
 from app.services.llm import generate_product
 from app.services.orchestrator import run_pipeline
 from app.services.transcription import transcribe
+from mcp_social_tools import register as register_social_tools
 
 configure_logging("INFO")
 log = get_logger("hackai.mcp")
 
 mcp = FastMCP("hirfati")
+
+# Social Commerce tools (generate / publish / schedule / analytics).
+register_social_tools(mcp)
 
 
 # --------------------------------------------------------------------------- #
@@ -104,6 +108,18 @@ def artisan_copywriter(transcription: str) -> str:
     return SYSTEM_PROMPT + "\n\n---\n\n" + build_user_prompt(transcription)
 
 
+async def _main() -> None:
+    # Start the scheduler in this process so schedule_post executes here
+    # too (pending jobs are reloaded from SQLite).
+    from app.services.social.scheduler_service import scheduler_service
+
+    scheduler_service.start()
+    try:
+        await mcp.run_stdio_async()
+    finally:
+        scheduler_service.shutdown()
+
+
 if __name__ == "__main__":
     log.info("Starting Hirfati MCP server (stdio)…")
-    asyncio.run(mcp.run_stdio_async())
+    asyncio.run(_main())

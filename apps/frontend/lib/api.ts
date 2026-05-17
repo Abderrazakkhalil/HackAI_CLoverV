@@ -33,3 +33,46 @@ export async function processArtisanProduct(
   }
   return resp.json();
 }
+
+export interface FacebookPublishResult {
+  status: "success";
+  post_id: string;
+}
+
+/**
+ * Publish a photo + caption to the linked Facebook Page.
+ * Reuses the backend `/api/social/facebook/publish` endpoint, which
+ * uses the Page token/ID configured server-side (.env).
+ */
+export async function publishFacebookPost(
+  imageUrl: string,
+  caption: string,
+): Promise<FacebookPublishResult> {
+  let resp: Response;
+  try {
+    resp = await fetch(`${API_URL}/api/social/facebook/publish`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_url: imageUrl, caption }),
+    });
+  } catch {
+    throw new Error(
+      "Cannot reach the backend. Is it running on port 8000?",
+    );
+  }
+
+  const body = await resp.json().catch(() => null);
+  if (!resp.ok) {
+    // FastAPI/typed-error envelope → surface the most useful message.
+    const detail =
+      body?.detail?.message ||
+      body?.detail ||
+      body?.error?.message ||
+      body?.error ||
+      `Request failed (${resp.status})`;
+    throw new Error(
+      typeof detail === "string" ? detail : JSON.stringify(detail),
+    );
+  }
+  return body as FacebookPublishResult;
+}

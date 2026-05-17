@@ -131,10 +131,26 @@ See [docs/MCP.md](docs/MCP.md). Tools: `transcribe_audio`,
 
 ```bash
 cd apps/backend
-pytest -q
+pytest -v                    # Run all tests
+pytest -q                    # Quiet mode
+pytest --cov                 # With coverage report
+pytest tests/test_generation.py -v    # Social content generation
+pytest tests/test_facebook.py -v      # Facebook publishing
+pytest tests/test_scheduler.py -v     # Post scheduling
 ```
 
-Covers file validation, JSON sanitization, and schema enforcement.
+**Test coverage:**
+
+| Module                 | Tests                                           |
+| ---------------------- | ----------------------------------------------- |
+| `test_schema.py`       | Product validation, JSON sanitization, retries |
+| `test_validation.py`   | Input constraints, Pydantic models             |
+| `test_generation.py`   | Groq social content generation, fallback logic |
+| `test_facebook.py`     | Facebook page publishing, response parsing     |
+| `test_scheduler.py`    | Job persistence, execution, past-due handling  |
+
+No test requires API keys — all service calls are mocked. Database tests use
+temporary SQLite. Schedule tests validate time constraints and job lifecycle.
 
 ## 🛟 Troubleshooting
 

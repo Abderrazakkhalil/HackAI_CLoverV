@@ -23,3 +23,10 @@ data/
 .DS_Store
 
 .vscode
+
+# Local tooling
+.claude/
+
+# Social runtime state (never commit tokens / scheduler DB)
+*.db
+apps/backend/social_accounts.json
