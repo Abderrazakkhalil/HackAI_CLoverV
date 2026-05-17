@@ -194,6 +194,12 @@ git fetch origin
 git checkout social_publication
 ```
 
+<p align="center">
+  <img src="./docs/screenshots/facebook_screenshot.jpeg" alt="Auto-posted listing on Facebook" width="480">
+</p>
+
+<p align="center"><em>A generated listing auto-posted to the Hirfati Business Facebook page.</em></p>
+
 ## 🔭 Future improvements
 
 - Vision model to read the photo (not just a filename hint)
