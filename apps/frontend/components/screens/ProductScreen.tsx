@@ -1,7 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
+  Bot,
+  ChevronDown,
+  ChevronUp,
   Download,
   Heart,
   MapPin,
@@ -26,6 +30,14 @@ export function ProductScreen({
 }) {
   const { t, lang, rtl } = useI18n();
   const { product, image_data_url, meta, transcription, artisan } = data;
+
+  const isAiPrice = meta.price_source === "ai_recommended";
+  const rec = meta.price_recommendation;
+
+  const [editedPrice, setEditedPrice] = useState<string>(
+    String(product.price.amount || ""),
+  );
+  const [showReasoning, setShowReasoning] = useState(false);
 
   const dims = product.dimensions;
   const dimText = [
@@ -87,18 +99,87 @@ export function ProductScreen({
             <h3 className="text-lg font-semibold leading-snug text-gold-50">
               {product.title[lang]}
             </h3>
+
+            {/* Price block */}
             <div className="shrink-0 text-end">
-              <div className="rounded-full bg-gold-sheen px-3 py-1.5 text-sm font-semibold text-gold shadow-gold-sm">
-                {product.price.amount} {product.price.currency}
+              {isAiPrice && (
+                <div className="mb-1.5 flex items-center justify-end gap-1.5">
+                  <Bot size={13} className="text-gold" />
+                  <span className="text-[11px] font-medium text-gold">
+                    AI suggested
+                  </span>
+                  {rec && (
+                    <button
+                      onClick={() => setShowReasoning((v) => !v)}
+                      className="rounded-full p-0.5 text-charcoal-600 hover:text-gold transition"
+                      aria-label="Toggle reasoning"
+                    >
+                      {showReasoning ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Editable price input */}
+              <div className="flex items-center gap-1.5 justify-end">
+                <input
+                  type="number"
+                  min={0}
+                  value={editedPrice}
+                  onChange={(e) => setEditedPrice(e.target.value)}
+                  className="w-24 rounded-full bg-charcoal-800 border border-gold/30 px-3 py-1.5 text-sm font-semibold text-gold shadow-gold-sm text-center outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold/60 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  aria-label="Price in MAD"
+                />
+                <span className="text-sm font-semibold text-gold">
+                  {product.price.currency}
+                </span>
               </div>
-              <p className="mt-1 text-[11px] text-charcoal-600">
-                ≈ ${product.price.price_usd_estimate}
-                {product.price.negotiable
-                  ? ` · ${t("result.negotiable")}`
-                  : ""}
-              </p>
+
+              {rec && (
+                <p className="mt-1 text-[11px] text-charcoal-600">
+                  {rec.min}–{rec.max} MAD ·{" "}
+                  {Math.round(rec.confidence * 100)}% confidence
+                </p>
+              )}
+              {!isAiPrice && (
+                <p className="mt-1 text-[11px] text-charcoal-600">
+                  ≈ ${product.price.price_usd_estimate}
+                  {product.price.negotiable
+                    ? ` · ${t("result.negotiable")}`
+                    : ""}
+                </p>
+              )}
             </div>
           </div>
+
+          {/* AI reasoning panel */}
+          <AnimatePresence>
+            {isAiPrice && showReasoning && rec && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-2xl border border-gold/20 bg-charcoal-800/60 p-4 text-sm text-charcoal-600">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Bot size={14} className="text-gold" />
+                    <span className="font-semibold text-gold-200">
+                      Why this price?
+                    </span>
+                  </div>
+                  <p className="leading-relaxed">{rec.reasoning}</p>
+                  {rec.comparable_ids.length > 0 && (
+                    <p className="mt-2 text-[11px] text-charcoal-700">
+                      Based on {rec.comparable_ids.length} comparable listing
+                      {rec.comparable_ids.length !== 1 ? "s" : ""} in our
+                      catalog.
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <p className="text-sm leading-relaxed text-charcoal-600">
             {product.description[lang]}
@@ -220,7 +301,7 @@ export function ProductScreen({
       <motion.div variants={fadeUp} className="mt-5 grid grid-cols-2 gap-3">
         <Button onClick={onRestart} variant="primary">
           <Download size={17} />
-          {t("btn.save")}
+          Publish
         </Button>
         <Button onClick={onRestart} variant="outline">
           <Plus size={17} />

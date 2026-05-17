@@ -55,6 +55,16 @@ class Settings(BaseSettings):
     max_image_bytes: int = 10 * 1024 * 1024  # 10 MB
     llm_max_retries: int = 1
 
+    # --- Supabase (runtime — get from Dashboard → Settings → API) ---
+    # NOTE: SUPABASE_PROJECT_REF / SUPABASE_ACCESS_TOKEN in .claude/settings.json
+    # are for the MCP dev tool ONLY; the app runtime needs these two.
+    supabase_url: str = ""
+    supabase_service_key: str = ""
+    supabase_anon_key: str = ""  # optional, used by /api/auth/login (uses gotrue)
+    seed_user_email: str = "seed@hirfati.local"
+    seed_user_password: str = "seed-password-change-me"
+    price_top_k: int = 8
+
     # --- Pipeline identity (surfaced in response meta) ---
     pipeline_version: str = "4.0.0"
 

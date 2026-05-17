@@ -78,11 +78,13 @@ def _call_space(wav_path: Path, speech_lang: SpeechLang) -> str:
     timeout_s = settings.amazigh_asr_timeout_s if speech_lang == "amazigh" else settings.asr_timeout_s
 
     try:
+        hf_token = settings.hf_token or None
+
         if speech_lang == "amazigh":
             log.info("Initializing Tamazight-NLP/ASR client (timeout=%ds)...", timeout_s)
             client = Client(
                 settings.amazigh_asr_space,
-                hf_token=settings.hf_token,
+                token=hf_token,
                 verbose=False,
             )
             log.info("Calling Tamazight-NLP/ASR with api_name=%s", settings.amazigh_asr_api_name)
@@ -93,7 +95,9 @@ def _call_space(wav_path: Path, speech_lang: SpeechLang) -> str:
         else:
             log.info("Initializing MoulSot client (timeout=%ds)...", timeout_s)
             client = Client(
-                settings.asr_space, hf_token=settings.hf_token, verbose=False
+                settings.asr_space,
+                token=hf_token,
+                verbose=False,
             )
             log.info("Calling MoulSot with api_name=/transcribe, lang=%s", settings.asr_lang)
             result = client.predict(

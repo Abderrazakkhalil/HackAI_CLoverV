@@ -54,6 +54,18 @@ export interface Product {
   missing_fields: string[];
 }
 
+export type PriceSource = "user" | "extracted" | "ai_recommended";
+
+export interface PriceRecommendation {
+  suggested: number;
+  min: number;
+  max: number;
+  currency: string;
+  confidence: number;
+  reasoning: string;
+  comparable_ids: string[];
+}
+
 export interface Meta {
   pipeline_version: string;
   asr_model: string;
@@ -62,6 +74,8 @@ export interface Meta {
   processed_at: string;
   audio_filename: string;
   inference_ms: number;
+  price_source: PriceSource;
+  price_recommendation: PriceRecommendation | null;
 }
 
 export interface TranscriptionResult {

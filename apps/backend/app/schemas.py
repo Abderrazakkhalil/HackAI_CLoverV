@@ -73,6 +73,9 @@ class Product(BaseModel):
     raw_transcript: str = ""
     confidence_score: float = 0.0
     missing_fields: list[str] = Field(default_factory=list)
+    # Set to true ONLY if the artisan explicitly said a price in the audio.
+    # Used to decide whether to trigger the AI price recommendation.
+    price_mentioned: bool = False
 
 
 class Artisan(BaseModel):
@@ -83,6 +86,25 @@ class Artisan(BaseModel):
     phone: str = ""
 
 
+PriceSource = Literal["user", "extracted", "ai_recommended"]
+
+
+class PriceRecommendation(BaseModel):
+    """AI-suggested price with confidence range and reasoning.
+
+    Surfaced to the frontend so the artisan understands *why* a price
+    was suggested and can override it before publishing.
+    """
+
+    suggested: float = Field(..., description="Recommended price in MAD")
+    min: float = 0
+    max: float = 0
+    currency: str = "MAD"
+    confidence: float = Field(0.5, ge=0.0, le=1.0)
+    reasoning: str = ""
+    comparable_ids: list[str] = Field(default_factory=list)
+
+
 class Meta(BaseModel):
     pipeline_version: str
     asr_model: str
@@ -91,6 +113,8 @@ class Meta(BaseModel):
     processed_at: str
     audio_filename: str
     inference_ms: int
+    price_source: PriceSource = "extracted"
+    price_recommendation: PriceRecommendation | None = None
 
 
 class GenerateRequest(BaseModel):

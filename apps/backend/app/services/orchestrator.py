@@ -16,6 +16,7 @@ from ..errors import ValidationError
 from ..logging_conf import get_logger
 from ..schemas import Artisan, Meta, ProcessResponse, SpeechLang
 from .llm import generate_product
+from .price_recommendation import recommend as recommend_price
 from .transcription import transcribe
 
 log = get_logger("hackai.pipeline")
@@ -71,6 +72,33 @@ async def run_pipeline(
     )
     log.info("LLM generation complete: model=%s, title_en=%s", llm_label, product.title.en[:50])
 
+    # InDrive-style price flow: if the artisan didn't mention a price,
+    # ask the recommender for an AI-suggested one.
+    # We rely on price_mentioned (explicit LLM flag) rather than amount==0
+    # because the LLM may hallucinate a plausible-looking amount even when
+    # the transcript had no price. The flag is a much harder signal to fake.
+    price_source = "extracted"
+    price_recommendation = None
+    log.info(
+        "LLM price extraction: amount=%.2f, price_mentioned=%s",
+        product.price.amount,
+        product.price_mentioned,
+    )
+    if not product.price_mentioned:
+        log.info("No price mentioned in transcript; triggering AI recommendation")
+        try:
+            rec, _comps = await asyncio.to_thread(recommend_price, product)
+            if rec.suggested > 0:
+                product.price.amount = rec.suggested
+                product.price.currency = rec.currency
+                product.price.price_usd_estimate = round(rec.suggested * 0.099, 2)
+                price_source = "ai_recommended"
+                price_recommendation = rec
+            else:
+                log.warning("Recommender returned suggested=0 — no comparables found; price left empty")
+        except Exception as exc:  # noqa: BLE001 - never block listing on rec failure
+            log.error("Price recommendation failed: %s", exc)
+
     if speech_lang == "amazigh":
         asr_model = "tamazight-nlp-asr"
         asr_provider = f"Gradio Space ({settings.amazigh_asr_space})"
@@ -86,6 +114,8 @@ async def run_pipeline(
         processed_at=datetime.now(timezone.utc).isoformat(),
         audio_filename=audio_filename,
         inference_ms=inference_ms,
+        price_source=price_source,
+        price_recommendation=price_recommendation,
     )
 
     return ProcessResponse(

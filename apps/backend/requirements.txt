@@ -1,13 +1,14 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
-pydantic==2.13.4
+pydantic[email]==2.13.4
 pydantic-settings==2.7.1
 python-dotenv==1.2.2
 httpx==0.28.1
 groq==0.15.0
-gradio-client==1.4.3
+gradio-client>=1.5.0
 imageio-ffmpeg==0.5.1
 mcp==1.2.0
+supabase>=2.7.0
 pytest==8.3.4
 pytest-asyncio==0.25.2

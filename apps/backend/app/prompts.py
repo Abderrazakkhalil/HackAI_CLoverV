@@ -23,6 +23,11 @@ Rules:
 - English descriptions should be 3-5 sentences highlighting craftsmanship, origin, and use case.
 - Tags should be English SEO keywords (8-15 tags).
 - Price currency defaults to "MAD". Convert to USD estimate using rate 0.099.
+- **Price extraction rule (CRITICAL):** Set `price_mentioned` to `true` ONLY
+  if the artisan said an actual number AND a currency word (درهم / درهم /
+  dirham / MAD / euro / dollar / دولار). Set it to `false` for everything
+  else. When `price_mentioned` is `false`, ALWAYS set price.amount = 0 and
+  price.price_usd_estimate = 0. Never guess or estimate a price.
 - Country of origin is always "Morocco".
 - confidence_score: your self-assessed confidence (0.0-1.0) in the extraction quality.
 - missing_fields: list field names you could NOT fill with a brief reason each.
@@ -91,7 +96,8 @@ Extract all product information and return a JSON object with this EXACT structu
     "artisan_notes": "any personal story the artisan shared, translated to English, or null",
     "raw_transcript": "{transcript}",
     "confidence_score": 0.0,
-    "missing_fields": []
+    "missing_fields": [],
+    "price_mentioned": false
   }}
 }}
 

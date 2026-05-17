@@ -13,7 +13,7 @@ const config: Config = {
           800: "#151517",
           750: "#1b1b1f",
           700: "#232328",
-          600: "#2e2e34",
+          600: "#c9b89a",
         },
         // Warm gold / bronze accent system
         gold: {
