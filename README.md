@@ -1,11 +1,11 @@
 # 🧶 Hirfati — Artisan Listing Studio
 
-Turn a **product photo** + a **Darija voice note** into a **rich multilingual
-e-commerce listing** (EN/FR/AR title & description, price in MAD + USD,
-materials, dimensions, origin, SEO tags) — instantly.
+Turn a **product photo** + a **voice note in Darija or Tamazight (Amazigh)**
+into a **rich multilingual e-commerce listing** (EN/FR/AR title & description,
+price in MAD + USD, materials, dimensions, origin, SEO tags) — instantly.
 
 > Built for Moroccan artisans who make world-class goods but don't speak
-> English or know e-commerce. Speak → Generate → sell globally.
+> English or know e-commerce. Speak in your language → Generate → sell globally.
 
 ---
 
@@ -13,7 +13,7 @@ materials, dimensions, origin, SEO tags) — instantly.
 
 | Home | Processing audio | Generated listing |
 | --- | --- | --- |
-| ![Home page](docs/screenshots/home%20page.png) | ![Processing audio](docs/screenshots/processing%20audio%20page.png) | ![Post page](docs/screenshots/post%20page.png) |
+| ![Home page](docs/screenshots/home-page.png) | ![Processing audio](docs/screenshots/processing-audio-page.png) | ![Post page](docs/screenshots/post-page.png) |
 
 ## ✨ What it does
 
