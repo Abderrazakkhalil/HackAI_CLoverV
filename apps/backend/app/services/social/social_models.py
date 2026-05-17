@@ -102,8 +102,14 @@ class SocialContentBundle(BaseModel):
 # Publishing
 # --------------------------------------------------------------------------- #
 class FacebookPublishInput(_StrictModel):
-    image_url: HttpUrl
     caption: str = Field(min_length=1)
+    # The artisan's uploaded photo, as a base64 data URL
+    # (``data:image/...;base64,...``). Uploaded to the Page as a real
+    # file. When omitted, a text-only Page post is published instead.
+    image_data_url: str | None = None
+    # Optional public image URL (used by the scheduler, which only has a
+    # stored URL). Ignored when ``image_data_url`` is provided.
+    image_url: HttpUrl | None = None
 
 
 class FacebookPublishResult(BaseModel):

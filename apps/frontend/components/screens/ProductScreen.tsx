@@ -260,6 +260,7 @@ export function ProductScreen({
         open={fbOpen}
         onClose={() => setFbOpen(false)}
         defaultCaption={fbCaption}
+        imageDataUrl={image_data_url}
       />
     </motion.div>
   );

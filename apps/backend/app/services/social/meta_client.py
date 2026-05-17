@@ -57,6 +57,7 @@ async def graph_request(
     error_cls: type[SocialError],
     data: dict[str, str] | None = None,
     params: dict[str, str] | None = None,
+    files: dict[str, tuple] | None = None,
     access_token: str | None = None,
 ) -> dict:
     """Execute one Graph call with the project retry policy.
@@ -80,7 +81,8 @@ async def graph_request(
         try:
             async with httpx.AsyncClient(timeout=s.meta_api_timeout_s) as client:
                 resp = await client.request(
-                    method, url, data=send_data, params=send_params
+                    method, url, data=send_data, params=send_params,
+                    files=files if method.upper() == "POST" else None,
                 )
         except httpx.RequestError as exc:
             last_details = f"network error: {exc!r}"

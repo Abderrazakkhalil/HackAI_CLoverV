@@ -66,10 +66,9 @@ const en: Dict = {
   "fb.modal.explainer":
     "We'll post this image and caption straight to your linked Facebook Page. Review it below before publishing.",
   "fb.caption": "Caption",
-  "fb.image": "Image URL",
-  "fb.image.hint":
-    "Paste a public image link — Facebook can't read the uploaded preview.",
-  "fb.image.ph": "https://example.com/photo.jpg",
+  "fb.withImage": "Your uploaded photo will be attached to the post.",
+  "fb.noImage":
+    "No photo was uploaded — this will be published as a text-only post.",
   "fb.cancel": "Cancel",
   "fb.confirm": "Publish now",
   "fb.publishing": "Publishing…",
@@ -77,7 +76,6 @@ const en: Dict = {
   "fb.viewPost": "View the post",
   "fb.error": "Publishing failed",
   "fb.captionRequired": "Caption can't be empty.",
-  "fb.imageRequired": "A public image URL is required.",
 
   "onb.title": "Welcome to Hirfati",
   "onb.subtitle": "Tell us about you — this appears on every listing you create.",
@@ -147,10 +145,9 @@ const fr: Dict = {
   "fb.modal.explainer":
     "Nous publierons cette image et cette légende directement sur votre Page Facebook liée. Vérifiez avant de publier.",
   "fb.caption": "Légende",
-  "fb.image": "URL de l'image",
-  "fb.image.hint":
-    "Collez un lien d'image public — Facebook ne peut pas lire l'aperçu importé.",
-  "fb.image.ph": "https://exemple.com/photo.jpg",
+  "fb.withImage": "Votre photo importée sera jointe à la publication.",
+  "fb.noImage":
+    "Aucune photo importée — ce sera une publication en texte seul.",
   "fb.cancel": "Annuler",
   "fb.confirm": "Publier maintenant",
   "fb.publishing": "Publication…",
@@ -158,7 +155,6 @@ const fr: Dict = {
   "fb.viewPost": "Voir la publication",
   "fb.error": "Échec de la publication",
   "fb.captionRequired": "La légende ne peut pas être vide.",
-  "fb.imageRequired": "Une URL d'image publique est requise.",
 
   "onb.title": "Bienvenue sur Hirfati",
   "onb.subtitle": "Parlez-nous de vous — visible sur chaque fiche créée.",
@@ -228,9 +224,8 @@ const ar: Dict = {
   "fb.modal.explainer":
     "سننشر هذه الصورة والنص مباشرة على صفحتك المرتبطة على فيسبوك. راجعها قبل النشر.",
   "fb.caption": "النص",
-  "fb.image": "رابط الصورة",
-  "fb.image.hint": "الصق رابط صورة عام — لا يستطيع فيسبوك قراءة المعاينة المرفوعة.",
-  "fb.image.ph": "https://example.com/photo.jpg",
+  "fb.withImage": "سيتم إرفاق صورتك المرفوعة بالمنشور.",
+  "fb.noImage": "لم تُرفع أي صورة — سيُنشر كمنشور نصي فقط.",
   "fb.cancel": "إلغاء",
   "fb.confirm": "انشر الآن",
   "fb.publishing": "جاري النشر…",
@@ -238,7 +233,6 @@ const ar: Dict = {
   "fb.viewPost": "عرض المنشور",
   "fb.error": "فشل النشر",
   "fb.captionRequired": "لا يمكن أن يكون النص فارغاً.",
-  "fb.imageRequired": "رابط صورة عام مطلوب.",
 
   "onb.title": "مرحباً بك في حرفتي",
   "onb.subtitle": "عرّفنا بنفسك — يظهر هذا على كل بطاقة تنشئها.",

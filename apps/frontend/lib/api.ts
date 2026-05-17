@@ -40,20 +40,24 @@ export interface FacebookPublishResult {
 }
 
 /**
- * Publish a photo + caption to the linked Facebook Page.
- * Reuses the backend `/api/social/facebook/publish` endpoint, which
- * uses the Page token/ID configured server-side (.env).
+ * Publish the artisan's post to the linked Facebook Page.
+ * `imageDataUrl` is the photo the artisan uploaded at the start (a
+ * base64 data URL). When null, a text-only Page post is published.
+ * The backend uses the Page token/ID configured server-side (.env).
  */
 export async function publishFacebookPost(
-  imageUrl: string,
   caption: string,
+  imageDataUrl: string | null,
 ): Promise<FacebookPublishResult> {
   let resp: Response;
   try {
     resp = await fetch(`${API_URL}/api/social/facebook/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_url: imageUrl, caption }),
+      body: JSON.stringify({
+        caption,
+        image_data_url: imageDataUrl,
+      }),
     });
   } catch {
     throw new Error(

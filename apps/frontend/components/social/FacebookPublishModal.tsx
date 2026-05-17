@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ExternalLink,
   Facebook,
+  ImageOff,
   Loader2,
   ShieldCheck,
   X,
@@ -20,14 +21,16 @@ export function FacebookPublishModal({
   open,
   onClose,
   defaultCaption,
+  imageDataUrl,
 }: {
   open: boolean;
   onClose: () => void;
   defaultCaption: string;
+  /** The photo the artisan uploaded at the start (data URL), or null. */
+  imageDataUrl: string | null;
 }) {
   const { t, rtl } = useI18n();
   const [caption, setCaption] = useState(defaultCaption);
-  const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [postId, setPostId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -36,7 +39,6 @@ export function FacebookPublishModal({
   useEffect(() => {
     if (open) {
       setCaption(defaultCaption);
-      setImageUrl("");
       setStatus("idle");
       setPostId(null);
       setErrorMsg(null);
@@ -45,21 +47,15 @@ export function FacebookPublishModal({
 
   async function handlePublish() {
     const cap = caption.trim();
-    const img = imageUrl.trim();
     if (!cap) {
       setErrorMsg(t("fb.captionRequired"));
-      setStatus("error");
-      return;
-    }
-    if (!/^https?:\/\/.+/i.test(img)) {
-      setErrorMsg(t("fb.imageRequired"));
       setStatus("error");
       return;
     }
     setStatus("publishing");
     setErrorMsg(null);
     try {
-      const res = await publishFacebookPost(img, cap);
+      const res = await publishFacebookPost(cap, imageDataUrl);
       setPostId(res.post_id);
       setStatus("success");
     } catch (e) {
@@ -165,24 +161,25 @@ export function FacebookPublishModal({
                     />
                   </div>
 
-                  {/* Image URL */}
-                  <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-gold-200">
-                      {t("fb.image")}
-                    </label>
-                    <input
-                      type="url"
-                      dir="ltr"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      disabled={busy}
-                      placeholder={t("fb.image.ph")}
-                      className="w-full rounded-xl border border-white/[0.06] bg-charcoal-850 px-3 py-2.5 text-sm text-gold-50 outline-none transition focus:border-gold/40 disabled:opacity-50"
-                    />
-                    <p className="mt-1.5 text-[11px] leading-relaxed text-charcoal-700">
-                      {t("fb.image.hint")}
-                    </p>
-                  </div>
+                  {/* The artisan's uploaded photo (or text-only note) */}
+                  {imageDataUrl ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-charcoal-850 p-2.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageDataUrl}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                      <p className="text-xs leading-relaxed text-charcoal-600">
+                        {t("fb.withImage")}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-charcoal-850 px-3 py-2.5 text-xs text-charcoal-600">
+                      <ImageOff size={15} className="shrink-0 text-charcoal-600" />
+                      {t("fb.noImage")}
+                    </div>
+                  )}
 
                   {status === "error" && errorMsg && (
                     <p className="rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-xs text-red-300">

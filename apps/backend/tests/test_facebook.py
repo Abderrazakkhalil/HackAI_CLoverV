@@ -224,3 +224,90 @@ async def test_publish_facebook_integer_post_id(monkeypatch):
 
     result = await publish_facebook_post(valid_input)
     assert result.post_id == "12345"
+
+
+@pytest.mark.asyncio
+async def test_publish_facebook_text_only(monkeypatch):
+    """No image → text-only post via the /feed edge with `message`."""
+    configure_meta(monkeypatch)
+    seen: dict = {}
+
+    async def mock_graph_request(method, endpoint, **kwargs):
+        seen["endpoint"] = endpoint
+        seen["data"] = kwargs.get("data")
+        seen["files"] = kwargs.get("files")
+        return {"id": "feed_1"}
+
+    monkeypatch.setattr(
+        "app.services.social.facebook_service.graph_request",
+        mock_graph_request,
+    )
+
+    result = await publish_facebook_post(
+        FacebookPublishInput(caption="Just a text post")
+    )
+
+    assert result.post_id == "feed_1"
+    assert seen["endpoint"].endswith("/feed")
+    assert seen["data"] == {"message": "Just a text post"}
+    assert seen["files"] is None
+
+
+@pytest.mark.asyncio
+async def test_publish_facebook_uploaded_photo(monkeypatch):
+    """A data-URL image → uploaded as real file bytes to /photos."""
+    configure_meta(monkeypatch)
+    seen: dict = {}
+
+    async def mock_graph_request(method, endpoint, **kwargs):
+        seen["endpoint"] = endpoint
+        seen["files"] = kwargs.get("files")
+        seen["data"] = kwargs.get("data")
+        return {"post_id": "photo_1"}
+
+    monkeypatch.setattr(
+        "app.services.social.facebook_service.graph_request",
+        mock_graph_request,
+    )
+
+    # 1x1 transparent PNG.
+    png_b64 = (
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0l"
+        "EQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    )
+    result = await publish_facebook_post(
+        FacebookPublishInput(
+            caption="With photo",
+            image_data_url=f"data:image/png;base64,{png_b64}",
+        )
+    )
+
+    assert result.post_id == "photo_1"
+    assert seen["endpoint"].endswith("/photos")
+    assert "source" in seen["files"]
+    fname, raw, mime = seen["files"]["source"]
+    assert mime == "image/png"
+    assert isinstance(raw, bytes) and len(raw) > 0
+    assert seen["data"] == {"caption": "With photo", "published": "true"}
+
+
+@pytest.mark.asyncio
+async def test_publish_facebook_bad_data_url(monkeypatch):
+    """A malformed data URL fails loudly, not silently."""
+    configure_meta(monkeypatch)
+
+    async def mock_graph_request(method, endpoint, **kwargs):
+        return {"post_id": "should_not_be_called"}
+
+    monkeypatch.setattr(
+        "app.services.social.facebook_service.graph_request",
+        mock_graph_request,
+    )
+
+    with pytest.raises(FacebookPublishError):
+        await publish_facebook_post(
+            FacebookPublishInput(
+                caption="Bad image",
+                image_data_url="not-a-data-url",
+            )
+        )
