@@ -13,7 +13,7 @@ price in MAD + USD, materials, dimensions, origin, SEO tags) — instantly.
 
 | Home | Processing audio | Generated listing |
 | --- | --- | --- |
-| ![Home page](docs/screenshots/home-page.png) | ![Processing audio](docs/screenshots/processing-audio-page.png) | ![Post page](docs/screenshots/post-page.png) |
+| ![Home page](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/home-page.png) | ![Processing audio](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/processing-audio-page.png) | ![Post page](https://raw.githubusercontent.com/Abderrazakkhalil/HackAI_CLoverV/main/docs/screenshots/post-page.png) |
 
 ## ✨ What it does
 
