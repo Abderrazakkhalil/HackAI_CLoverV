@@ -1,112 +1,139 @@
-# 🧶 Hirfati — Artisan Listing Studio
+<p align="center">
+  <strong style="font-size: 1.75rem; letter-spacing: 0.04em;">Hirfati</strong><br/>
+  <em>Artisan Listing Studio — speak in Darija or Tamazight, sell globally</em>
+</p>
 
-Turn a **product photo** + a **voice note in Darija or Tamazight (Amazigh)**
-into a **rich multilingual e-commerce listing** (EN/FR/AR title & description,
-price in MAD + USD, materials, dimensions, origin, SEO tags) — instantly.
+<p align="center">
+  <a href="https://github.com/Abderrazakkhalil/HackAI_CLoverV"><img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14"></a>
+  <a href="https://github.com/Abderrazakkhalil/HackAI_CLoverV"><img src="https://img.shields.io/badge/FastAPI-async-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI"></a>
+  <a href="https://github.com/Abderrazakkhalil/HackAI_CLoverV"><img src="https://img.shields.io/badge/Groq-LLM-f55036?style=flat-square" alt="Groq"></a>
+  <a href="https://github.com/Abderrazakkhalil/HackAI_CLoverV"><img src="https://img.shields.io/badge/MCP-ready-8B5CF6?style=flat-square" alt="MCP"></a>
+  <a href="https://github.com/Abderrazakkhalil/HackAI_CLoverV"><img src="https://img.shields.io/badge/i18n-AR%20%7C%20FR%20%7C%20EN-d4a85a?style=flat-square" alt="i18n"></a>
+</p>
 
-> Built for Moroccan artisans who make world-class goods but don't speak
-> English or know e-commerce. Speak in your language → Generate → sell globally.
+<p align="center">
+  Turn a <strong>product photo</strong> and a <strong>voice note in Darija or Tamazight</strong> into a
+  <strong>rich multilingual e-commerce listing</strong> — EN / FR / AR titles and descriptions,
+  fair price in MAD + USD, materials, dimensions, origin, and SEO tags — in seconds.
+</p>
+
+<p align="center">
+  Built for Moroccan artisans who craft world-class goods but don't speak English or know e-commerce.<br/>
+  <strong>Speak in your language → Generate → sell globally.</strong>
+</p>
 
 ---
 
-## 📸 Screenshots
+## AI Pipeline
+
+End-to-end flow from voice input to structured listings, RAG pricing, and multi-platform distribution.
+
+<p align="center">
+  <img src="./docs/screenshots/pipeline.png" alt="Hirfati AI Pipeline — Darija & Tamazight ASR, Groq LLM, RAG pricing, MCP distribution" width="920">
+</p>
+
+<p align="center">
+  <sub><em>Darija & Tamazight speech recognition → Groq extraction → structured JSON → RAG fair-price engine → MCP & social distribution</em></sub>
+</p>
+
+---
+
+## Highlights
+
+| | |
+| --- | --- |
+| **Multilingual speech** | Darija via `atlasia/MoulSot.v0.3` · Amazigh via `Tamazight-NLP/ASR` — user picks language before recording |
+| **LLM extraction** | Groq `llama-4-scout-17b` (primary), `llama-3.3-70b` fallback — strict JSON, validate, retry |
+| **Fair pricing** | RAG over Supabase listings when no price is spoken — scored comparables + expert MAD estimate |
+| **Anti-hallucination** | `price_mentioned` only when transcript has a number **and** currency word (درهم / MAD / euro / …) |
+| **Premium UI** | Next.js 14 · dark charcoal + gold · EN / FR / AR with RTL for Arabic |
+| **Agent-ready** | Same pipeline exposed via MCP tools for any compatible agent |
+| **Observable** | Stage-level logs and explicit ASR timeouts — no silent 100% spinners |
+
+---
+
+## Screenshots
 
 <table>
   <tr>
-    <th>Home</th>
-    <th>Processing audio</th>
-    <th>Generated listing</th>
+    <th align="center">Home</th>
+    <th align="center">Processing audio</th>
+    <th align="center">Generated listing</th>
   </tr>
   <tr>
-    <td><img src="./docs/screenshots/home-page.png" alt="Home page" width="320"></td>
-    <td><img src="./docs/screenshots/processing-audio-page.png" alt="Processing audio" width="320"></td>
-    <td><img src="./docs/screenshots/post-page.png" alt="Post page" width="320"></td>
+    <td align="center"><img src="./docs/screenshots/home-page.png" alt="Home — photo upload and voice capture" width="280"></td>
+    <td align="center"><img src="./docs/screenshots/processing-audio-page.png" alt="Pipeline processing voice and image" width="280"></td>
+    <td align="center"><img src="./docs/screenshots/post-page.png" alt="Multilingual product listing result" width="280"></td>
   </tr>
 </table>
 
-## ✨ What it does
+---
+
+## How it works
 
 ```
 Photo  ┐
        ├─► Darija OR Amazigh STT ─► Groq Llama-4-Scout ─► validated Product ─► premium UI
 Voice  ┘   (user-selected lang)     ↓ llama-3.3-70b fallback   ↓ AI price recommendation
-                                    (failures surface as clear errors)
+                                    (failures → clear errors, never fabricated listings)
 ```
 
-- **Speech-to-Text (multi-lingual):**
-  - Darija via `atlasia/MoulSot.v0.3`
-  - Amazigh / Tamazight via `Tamazight-NLP/ASR`
-  - User picks the spoken language with a segmented control above the mic
-    (persisted in `localStorage`); choice flows through the API
-    (`speech_lang`) to route audio to the right Gradio Space
-- **LLM extraction:** Groq `meta-llama/llama-4-scout-17b-16e-instruct`
-  (primary), `llama-3.3-70b-versatile` (fallback), strict JSON + retry
-- **AI price recommendation:** when the artisan does **not** speak a price,
-  the backend pulls comparable published listings from Supabase (3-level
-  fallback: category + materials → category → any published), scores them
-  (`2×material_overlap + colors_overlap + 0.5×tag_overlap + dimension_similarity`),
-  and asks Groq to estimate a fair MAD price as a Moroccan handicraft
-  expert. Returns suggested / min / max / confidence / reasoning, shown
-  in the UI with an "AI suggested" badge and a collapsible reasoning panel.
-- **Anti-hallucination guard:** the LLM must set `price_mentioned=true` only
-  when the transcript contains an explicit number **and** a currency word
-  (درهم / dirham / MAD / euro / dollar / دولار). Otherwise the orchestrator
-  triggers the recommendation flow instead of trusting a fabricated price.
-- **i18n UI:** EN / FR / AR
-- **MCP server:** same capabilities exposed to any MCP agent
-- **Observability:** pipeline-stage logs and explicit ASR timeouts so
-  cold-start hangs surface as timeouts instead of silent 100% spinners
-- **No silent fallbacks:** any STT/LLM failure raises a clear error
-  instead of fabricating a listing
+**Speech-to-text routing** — segmented control above the mic (persisted in `localStorage`) sends `speech_lang` to the API so audio hits the correct Gradio Space.
 
-## 🗂 Structure
+**AI price recommendation** — when the artisan doesn't state a price, the backend queries comparable published listings (category + materials → category → any published), scores overlap, and asks Groq for a fair MAD range with confidence and reasoning (shown with an “AI suggested” badge).
+
+**No silent fallbacks** — STT or LLM failures raise typed errors; the pipeline never substitutes fake data.
+
+---
+
+## Project structure
 
 ```
 apps/
-  backend/    FastAPI + shared services + MCP server
-  frontend/   Next.js 14 + TS + Tailwind (dark Vercel/Stripe UI)
+  backend/    FastAPI · shared services · MCP server
+  frontend/   Next.js 14 · TypeScript · Tailwind (charcoal + gold UI)
 packages/
-  shared-types/  TS + JSON schema (single contract source)
-docs/         ARCHITECTURE.md · MCP.md
-scripts/      test_env.py
+  shared-types/   TypeScript + JSON schema — single contract source
+docs/             ARCHITECTURE.md · MCP.md · screenshots/
+scripts/          test_env.py
 ```
 
 ---
 
-## 🚀 Setup
+## Quick start
 
-### 0. Prereqs
+### Prerequisites
 
-Python 3.10+, Node 18+, a microphone, a Groq API key and a Hugging Face
-token (both free tiers work).
+Python 3.10+, Node 18+, a microphone, a [Groq](https://console.groq.com/) API key, and a [Hugging Face](https://huggingface.co/settings/tokens) token (free tiers work).
 
-### 1. Configure secrets
+### 1 · Configure secrets
 
 ```bash
-cp .env.example .env      # then fill GROQ_API_KEY + HF_TOKEN
+cp .env.example .env
+# Set GROQ_API_KEY and HF_TOKEN
 ```
 
-| Variable       | Required | Notes                          |
-| -------------- | -------- | ------------------------------ |
-| `GROQ_API_KEY` | yes      | LLM extraction (Groq)          |
-| `HF_TOKEN`     | yes      | MoulSot Space (Darija STT) auth |
+| Variable | Required | Purpose |
+| --- | :---: | --- |
+| `GROQ_API_KEY` | yes | LLM extraction |
+| `HF_TOKEN` | yes | MoulSot Darija STT (Gradio Space auth) |
 
-ffmpeg is **not** required system-wide — a binary is bundled via
-`imageio-ffmpeg`.
+> ffmpeg is bundled via `imageio-ffmpeg` — no system install needed.
 
-### 2. Backend
+### 2 · Backend
 
 ```bash
 cd apps/backend
 python -m venv .venv
-# Windows: .venv\Scripts\activate   |   macOS/Linux: source .venv/bin/activate
+# Windows:  .venv\Scripts\activate
+# macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Check: <http://localhost:8000/api/health> · Docs: <http://localhost:8000/docs>
+Health: [localhost:8000/api/health](http://localhost:8000/api/health) · API docs: [localhost:8000/docs](http://localhost:8000/docs)
 
-### 3. Frontend
+### 3 · Frontend
 
 ```bash
 cd apps/frontend
@@ -115,24 +142,26 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+Open [localhost:3000](http://localhost:3000).
 
-### 4. MCP server (optional)
+### 4 · MCP server (optional)
 
 ```bash
 cd apps/backend
-python mcp_server.py        # stdio — see docs/MCP.md to register
+python mcp_server.py
 ```
+
+Register in your MCP client — see [docs/MCP.md](docs/MCP.md).
 
 ---
 
-## 🧪 API examples
+## API
 
 ```bash
 # Health
 curl http://localhost:8000/api/health
 
-# Text-only generation (no audio needed)
+# Text-only (no audio)
 curl -X POST http://localhost:8000/api/generate \
   -H "Content-Type: application/json" \
   -d '{"transcription":"zarbya soof tabi3i hamra kbira khdmtha b yeddi"}'
@@ -142,25 +171,33 @@ curl -X POST http://localhost:8000/api/process \
   -F "audio=@voice.wav" -F "image=@rug.jpg"
 ```
 
-Validated response shape:
+Example response shape:
 
 ```json
 {
   "product_title": "Handwoven Atlas Berber Wool Rug — Crimson & Honey",
   "marketing_description": "Knotted by hand in the Atlas foothills…",
-  "features": ["100% natural sheep wool", "Hand-knotted", "..."],
+  "features": ["100% natural sheep wool", "Hand-knotted"],
   "suggested_price_usd": "$420 - $560",
-  "seo_tags": ["berber rug", "moroccan rug", "..."]
+  "seo_tags": ["berber rug", "moroccan rug"]
 }
 ```
 
-## 🔌 MCP
+---
 
-A real MCP server (tools / resources / prompts) reusing the same pipeline.
-See [docs/MCP.md](docs/MCP.md). Tools: `transcribe_audio`,
-`generate_product_listing`, `process_artisan_product`.
+## MCP tools
 
-## 🧷 Tests
+| Tool | Description |
+| --- | --- |
+| `transcribe_audio` | Darija or Amazigh STT only |
+| `generate_product_listing` | Text → validated multilingual product |
+| `process_artisan_product` | Full photo + voice pipeline |
+
+Details: [docs/MCP.md](docs/MCP.md)
+
+---
+
+## Tests
 
 ```bash
 cd apps/backend
@@ -169,25 +206,24 @@ pytest -q
 
 Covers file validation, JSON sanitization, and schema enforcement.
 
-## 🛟 Troubleshooting
+---
 
-| Problem                       | Fix                                                  |
-| ----------------------------- | ---------------------------------------------------- |
-| Backend unreachable from UI   | Backend must run on `:8000`; check CORS origin       |
-| `GROQ_API_KEY` missing        | Set it in `.env` — extraction won't run without it   |
-| Mic not working               | Use Chrome, allow mic permission                     |
-| MoulSot down / no token       | Clear error shown — set `HF_TOKEN`, retry            |
-| Garbled LLM JSON              | Auto sanitize + retry → fallback model               |
-| `pip install` fails on Win    | Upgrade pip; ensure Python 3.10+                     |
+## Troubleshooting
 
-## 📣 Social publication (in progress)
+| Symptom | Fix |
+| --- | --- |
+| Backend unreachable from UI | Run backend on `:8000`; check CORS origin |
+| `GROQ_API_KEY` missing | Set in `.env` — extraction won't run |
+| Mic not working | Use Chrome; allow microphone permission |
+| MoulSot down / no token | Set `HF_TOKEN`; retry — error is surfaced in UI |
+| Garbled LLM JSON | Auto sanitize + retry → fallback model |
+| `pip install` fails on Windows | Upgrade pip; use Python 3.10+ |
 
-We're building **one-click auto-posting to Facebook** so a generated listing
-can go from the studio straight to an artisan's Facebook page. The work
-lives on the [`social_publication`](https://github.com/Abderrazakkhalil/HackAI_CLoverV/tree/social_publication)
-branch — check it out for the Facebook Graph API integration, OAuth flow,
-and post-composition logic. Pull and run that branch to try the feature
-before it lands on `main`.
+---
+
+## Social publication (in progress)
+
+One-click auto-posting to Facebook is on the [`social_publication`](https://github.com/Abderrazakkhalil/HackAI_CLoverV/tree/social_publication) branch — Graph API integration, OAuth, and post composition.
 
 ```bash
 git fetch origin
@@ -198,16 +234,28 @@ git checkout social_publication
   <img src="./docs/screenshots/facebook_screenshot.jpeg" alt="Auto-posted listing on Facebook" width="480">
 </p>
 
-<p align="center"><em>A generated listing auto-posted to the Hirfati Business Facebook page.</em></p>
-
-## 🔭 Future improvements
-
-- Vision model to read the photo (not just a filename hint)
-- One-click export to Etsy/Shopify
-- Streaming generation for sub-second perceived latency
-- Multi-product batch mode, Docker compose
-- More STT languages beyond Darija + Amazigh
+<p align="center"><sub>A generated listing auto-posted to the Hirfati Business Facebook page.</sub></p>
 
 ---
 
-Architecture rationale & trade-offs: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Roadmap
+
+- Vision model to read the product photo (not just filename hints)
+- One-click export to Etsy / Shopify
+- Streaming generation for sub-second perceived latency
+- Multi-product batch mode · Docker Compose
+- Additional STT languages beyond Darija + Amazigh
+
+---
+
+## Documentation
+
+- [Architecture & trade-offs](docs/ARCHITECTURE.md)
+- [MCP integration](docs/MCP.md)
+- [Amazigh STT setup](docs/AMAZIGH_SETUP.md)
+
+---
+
+<p align="center">
+  <sub>Hirfati — empowering Moroccan artisans to reach global markets without language barriers.</sub>
+</p>
